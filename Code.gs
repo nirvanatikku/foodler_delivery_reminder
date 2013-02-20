@@ -113,7 +113,7 @@ function createReminderForLatestOrder(){
     var o = latestOrderQuery.next();
     o.calEventCreated = createReminder(o);
     _.db.save(o);
-    if(i>3)break; // incase... we don't want to go off creating 10s/100s of events
+    if(i++>3)break; // incase... we don't want to go off creating 10s/100s of events
   }
 }
 
