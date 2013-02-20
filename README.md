@@ -1,5 +1,5 @@
-foodler_delivery_reminder
-=========================
+Foodler Delivery Reminder Script
+================================
 
 Google Apps Script that creates calendar notifications for deliveries from Foodler.com via emails in Gmail.
 
