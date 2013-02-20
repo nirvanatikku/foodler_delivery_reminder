@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+  <meta charset="utf-8" />
+  <style>
+    html { background: url(https://dl.dropbox.com/u/7152863/black_lozenge.png) repeat; }
+    h1 { font-size:4.5em; color:#fdab01; }
+    body { font-family: "Arial", "Helvetica Neue"; font-size:0.9em; margin:0 auto; width:1400px; text-align:center; color: #f1f1f1; line-height:15px; }
+    table { background:rgba(250,250,250,0.8); padding-top:10px; padding-bottom:10px; border-collapse:collapse; padding-left:20px; padding-right:20px; width:100%; }
+    td { padding:6px 4px; color:#333;  }
+    th, td { text-align:left; font-weight:normal; border:1px solid rgba(0,0,0,0.1); }
+    th { background-color:rgba(250,250,250,0.95); color:#0f4e7e; padding:10px 5px; }
+    button { border:3px outset #fff; padding:6px 3px; background:#eaeaea; color:#111; line-height:20px; width:100%; }
+    button:active  {background:#999; border-color:#000; }
+  </style>
+  <script src="//code.jquery.com/jquery-1.7.2.min.js"></script>
+  <!--
+  <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/backbone.js/0.9.10/backbone-min.js"></script> 
+  -->
+  <script>
+    
+    /*var Order = Backbone.Model.extend({
+      defaults: {
+        id: '',
+        restaurant: '',
+        total: '',
+        processed: '',
+        tip: '',
+        delivery: '',
+        destination: '',
+        calEventCreated: false
+      }
+      });*/
+    
+    
+    // var _tmpl = [];
+    var elms = ["orderID","restaurant","total","processed","tip","delivery","destination"];//,"calEventCreated"];
+    //for(var i=0; i<elms.length; i++){
+    //  var elm = elms[i];
+    //  _tmpl.push("<"); _tmpl.push("%"); _tmpl.push("=");
+    //  _tmpl.push(elm); 
+    //  _tmpl.push("%"); _tmpl.push(">");
+    //}
+    
+    //var template = _.template("<td>"+_tmpl.join("</td><td>")+"</td>");
+    
+    /*  var OrderView = Backbone.View.extend({
+      tagName: "tr",
+      initialize:function(){},
+      template: ,
+      render: function(){
+        this.$el.html( this.template(this.model.toJSON()) );
+        return this;
+      }
+      });*/
+    
+    var currentPage = -1;
+    
+    function fetch(){
+      
+      var $orders = $("#orders");
+      
+      google.script.run.withSuccessHandler(function(res){
+        console.log(res);
+        if( res === '' ) {
+          $("#load-more").hide();
+        }
+        var o, ov;
+        for (var prop in res) {
+          if (res.hasOwnProperty(prop)) {
+            if(prop === 'calEventCreated'){
+              continue;
+            }
+            console.log(prop+'\n'+res[prop]);
+            //o = new Order(res[prop]);
+            //ov = new OrderView({model: o});
+            //$("#orders").append(ov.render().el);
+            o = res[prop];
+            ov = [];
+            for(var j=0; j<elms.length; j++){
+              ov.push(o[elms[j]]);
+            }
+            $orders.append("<tr><td>"+ov.join("</td><td>")+"</td></tr>");
+          }
+        }
+      }).withFailureHandler(function(res){
+        console.log("fail");
+      }).fetchOrders(++currentPage);
+      
+    };
+    
+    $(document).ready(function(){
+      $("#load-more").bind("click",fetch);
+      fetch();
+    });
+    
+  </script>
+  <body>
+    <br/>
+    <h1>Foodler Orders</h1>
+    <p>Here are all your Foodler orders. Use the button at the bottom to load more.</p>
+    <br/>
+    <table>
+      <thead>
+        <th>ID</th>
+        <th>Restaurant</th>
+        <th>Total</th>
+        <th>Processed</th>
+        <th>Tip</th>
+        <th>Delivery</th>
+        <th>Destination</th>
+        <!--<th>Event Created</th>-->
+      </thead>
+      <tbody id="orders">
+        
+      </tbody>
+    </table>
+    <br/>
+    <p>
+      <button type='button' id='load-more'>Load More</button>
+    </p>
+    <br/>
+    <footer>
+      By <a href="http://tikku.com">Nirvana Tikku</a>
+    </footer>
+    <br/>
+  </body>
+</html>
