@@ -5,7 +5,8 @@
  *    1. the order, from start time to end time (showing the duration) - without reminders
  *    2. the delivery notification, when the delivery is estimated to arrive - with sms, email and popup alerts
  *
- * Integrates Gmail and Calendar Services. Uses ScriptDb, XML service, UserProperty and triggers.
+ * An automated service that integrates Gmail and Calendar Services. 
+ * Uses ScriptDb, XML service, UserProperty and triggers.
  *
  * Author: Nirvana Tikku
  * Date: 20th Feb 2013
@@ -28,7 +29,10 @@ var _ = {
   order_destination_xpath: 'html.body.div.table[1].tr[1].td.table.tr[0].td',
   order_estimated_delivery_xpath: 'html.body.div.table[1].tr[1].td.table.tr[0].td.b[1]',
   
-  db: ScriptDb.getMyDb()
+  db: ScriptDb.getMyDb(),
+  getUserID: function getUserID(){
+    return Session.getEffectiveUser().getEmail();
+  }
   
 };
 
@@ -50,7 +54,7 @@ function Trigger_CheckNewOrders(){ createReminderForLatestOrder(); }
  */
 function fetchOrders(page){
   var ret = [];
-  var qry = _.db.query({type: _.type}).sortBy("orderID", _.db.DESCENDING, _.db.NUMERIC).paginate( page || 0, 25);
+  var qry = _.db.query({type: _.type, userid: _.getUserID()}).sortBy("orderID", _.db.DESCENDING, _.db.NUMERIC).paginate( page || 0, 25);
   while(qry.hasNext()){
     ret.push(qry.next());
   }
@@ -91,6 +95,7 @@ function createOrder(orderID, xmlDoc){
     destination = destination.replace('around .','');
   }
   return { 
+    userid: _.getUserID(),
     type: _.type,
     orderID: orderID,
     restaurant: restaurant,
@@ -108,17 +113,17 @@ function createOrder(orderID, xmlDoc){
  */
 function createReminderForLatestOrder(){
   var i = 0;
-  var latestOrderQuery = _.db.query({type: _.type, calEventCreated: false}).sortBy("orderID", _.db.DESCENDING, _.db.NUMERIC);
-  while(latestOrderQuery.hasNext()){
+  var latestOrderQuery = _.db.query({type: _.type, calEventCreated: false, userid: _.getUserID()}).sortBy("orderID", _.db.DESCENDING, _.db.NUMERIC);
+  while(latestOrderQuery.hasNext(), i){
     var o = latestOrderQuery.next();
     o.calEventCreated = createReminder(o);
     _.db.save(o);
-    if(i>3)break; // incase... we don't want to go off creating 10s/100s of events
+    if(i++>3)break; // incase... we don't want to go off creating 10s/100s of events
   }
 }
 
 function _devTestCreation(){
-  var latestOrderQuery = _.db.query({type: _.type, orderID: '237447479'});
+  var latestOrderQuery = _.db.query({type: _.type, orderID: '237447479', userid: _.getUserID()});
   while(latestOrderQuery.hasNext()){
     var o = latestOrderQuery.next();
     o.calEventCreated = createReminder(o);
@@ -136,7 +141,7 @@ function clearOrders(){
   var db = ScriptDb.getMyDb();
   //var i = 0;
   while (true) {
-    var result = db.query({type: _.type});
+    var result = db.query({type: _.type, userid: _.getUserID()});
     if (result.getSize() == 0) {
       break;
     }
@@ -170,7 +175,7 @@ function tick(msg, p1){
 function getExistingOrderIDs(){
   //var p1 = +new Date;
   var ret = [];
-  var existingIdsQuery = _.db.query({type: _.type});
+  var existingIdsQuery = _.db.query({type: _.type, userid: _.getUserID()});
   while(existingIdsQuery.hasNext()){
     ret.push(existingIdsQuery.next().orderID);
   }
