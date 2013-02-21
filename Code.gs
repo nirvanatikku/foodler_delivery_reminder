@@ -114,7 +114,7 @@ function createOrder(orderID, xmlDoc){
 function createReminderForLatestOrder(){
   var i = 0;
   var latestOrderQuery = _.db.query({type: _.type, calEventCreated: false, userid: _.getUserID()}).sortBy("orderID", _.db.DESCENDING, _.db.NUMERIC);
-  while(latestOrderQuery.hasNext(), i){
+  while(latestOrderQuery.hasNext()){
     var o = latestOrderQuery.next();
     o.calEventCreated = createReminder(o);
     _.db.save(o);
