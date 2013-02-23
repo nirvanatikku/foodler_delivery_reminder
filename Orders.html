@@ -52,7 +52,7 @@
     var elms = ["orderID","restaurant","total","tip","processed","delivery","destination"];//,"calEventCreated"];
     var currentPage = -1;
     
-    function fetch(){
+    function fetch(cb){
       
       var $orders = $("#orders");
       
@@ -76,22 +76,31 @@
             $orders.append("<tr><td>"+ov.join("</td><td>")+"</td></tr>");
           }
         }
+        if(cb) cb();
       }).withFailureHandler(function(res){
         console.log("fail");
+        if(cb) cb();
       }).fetchOrders(++currentPage);
       
     };
     
     $(document).ready(function(){
-      $("#load-more").bind("click",fetch);
+      $("#load-more").bind("click",function(){
+        var $this = $(this);
+        $this.css('opacity',0.3);
+        fetch(function(){
+          $this.css('opacity',1);
+        });
+      });
       fetch();
     });
     
   </script>
   <body>
     <br/>
-    <h1>Foodler Orders</h1>
-    <p>Here are all your Foodler orders. Use the button at the bottom to load more.</p>
+    <h1>Foodler Delivery Reminder</h1>
+    <p>Below are all your Foodler orders. Use the button at the bottom to load more. <em>If you don't see any orders, check back in a few minutes. Thanks!</em></p>
+    <p>This script will run an automated service behind the scenes. It will look for any new emails from Foodler.com, and will create 2 events in your Google Calendar. The first event will capture your order: when it was placed, till when it is expected to arrive. The second, will create a reminder for your order; in addition to standard calender notifications, this script will send you an SMS reminder when your order should have arrived.</p>
     <br/>
     <table>
       <thead>
@@ -114,7 +123,7 @@
     </p>
     <br/>
     <footer>
-      By <a href="http://tikku.com">Nirvana Tikku</a>
+      Created by <a href="http://tikku.com">Nirvana Tikku</a>. For more information: <a href='http://ntikku.appspot.com/p/GAS_Foodler_Delivery_Reminder/'>ntikku.appspot.com/p/GAS_Foodler_Delivery_Reminder/</a>
     </footer>
     <br/>
   </body>

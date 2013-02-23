@@ -266,8 +266,8 @@ function createReminder(order){
   //
   var reminderEvt = cal.createEvent(order.restaurant + " Delivery Should Have Arrived!", evt.getEndTime(), evt.getEndTime());
   reminderEvt.addSmsReminder(_.reminder_period); // mins before
-  reminderEvt.addEmailReminder(_.reminder_period);
-  reminderEvt.addPopupReminder(_.reminder_period);
+  //reminderEvt.addEmailReminder(_.reminder_period);
+  //reminderEvt.addPopupReminder(_.reminder_period);
   return [evt.getId(), reminderEvt.getId()];
 }
 
